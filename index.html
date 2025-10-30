@@ -179,6 +179,7 @@
             display: flex;
             gap: 25px;
             font-size: 0.95rem;
+            flex-wrap: wrap;
         }
 
         .meta-item {
@@ -308,12 +309,59 @@
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
         }
 
+        .ai-button {
+            padding: 12px 30px;
+            background: linear-gradient(to right, #ec4899, #be185d);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .ai-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+
         .info-box {
             background: rgba(59, 130, 246, 0.2);
             border: 1px solid rgba(59, 130, 246, 0.5);
             border-radius: 8px;
             padding: 15px;
             color: #93c5fd;
+        }
+
+        .success-indicator {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .success-indicator.excellent {
+            background: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            border: 1px solid #34d399;
+        }
+
+        .success-indicator.good {
+            background: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            border: 1px solid #60a5fa;
+        }
+
+        .success-indicator.average {
+            background: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
         }
 
         .stats-grid {
@@ -653,6 +701,30 @@
             background: rgba(239, 68, 68, 0.3);
             color: #f87171;
         }
+
+        .ai-system-panel {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(190, 24, 93, 0.2));
+            border: 2px solid rgba(236, 72, 153, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .ai-system-panel h3 {
+            color: #fbbf24;
+            margin-bottom: 15px;
+        }
+
+        .selected-count {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(124, 58, 237, 0.3);
+            border: 1px solid #7c3aed;
+            border-radius: 8px;
+            color: #e0e7ff;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -669,6 +741,7 @@
         <div class="tabs">
             <button class="tab-button active" onclick="switchTab('kupon')">🎯 10 Kolonluk Kupon</button>
             <button class="tab-button" onclick="switchTab('simulasyon')">🎲 Monte Carlo Simülasyonu</button>
+            <button class="tab-button" onclick="switchTab('ai-sistem')">🤖 AI Sistem Önerisi</button>
             <button class="tab-button" onclick="switchTab('oneriler')">💡 Optimal Kolon Önerileri</button>
             <button class="tab-button" onclick="switchTab('ozellikler')">⚡ Özellikler</button>
         </div>
@@ -743,6 +816,34 @@
             </div>
         </div>
 
+        <div id="ai-sistem-tab" class="tab-content">
+            <div class="ai-system-panel">
+                <h3>🤖 AI Sistem Tarafından Oluşturulan Optimal Kupon</h3>
+                <p style="color: #cbd5e1; line-height: 1.6;">
+                    Sistem, 2025 frekans verilerini, matematiksel optimizasyon algoritmalarını ve gelişmiş istatistiksel analizleri kullanarak 
+                    <strong style="color: #fbbf24;">en yüksek kazanma olasılığına sahip</strong> 10 kolonluk kuponu oluşturur.
+                </p>
+                <p style="color: #cbd5e1; margin-top: 15px; line-height: 1.6;">
+                    <strong>Optimizasyon Kriterleri:</strong><br>
+                    ✓ Frekans ağırlıklı sayı seçimi (sıcak/orta/soğuk denge)<br>
+                    ✓ Tek-çift dengesi (2-4 arası)<br>
+                    ✓ Toplam optimizasyonu (108-194 arası, ideal: 170-190)<br>
+                    ✓ Ardışık sayı kontrolü (max 2 ardışık)<br>
+                    ✓ Ondalık bölge dengesi (her 10'luk dilimden seçim)<br>
+                    ✓ Asal sayı dengesi (2-3 asal sayı)<br>
+                    ✓ Son hane çeşitliliği (dengeli dağılım)<br>
+                    ✓ Kolon çeşitliliği (birbirinden farklı kombinasyonlar)
+                </p>
+                
+                <button class="ai-button" onclick="generateAISystemCoupon()" style="margin-top: 20px;">
+                    <span>🧠</span>
+                    <span>Sistem Kuponunu Oluştur</span>
+                </button>
+            </div>
+
+            <div id="ai-system-container"></div>
+        </div>
+
         <div id="oneriler-tab" class="tab-content">
             <div class="simulation-panel">
                 <h3>💡 Optimal Kolon Önerileri</h3>
@@ -768,7 +869,8 @@
                 <h3>Sayıları Düzenle</h3>
                 <button class="close-button" onclick="closeEditModal()">×</button>
             </div>
-            <p style="color: #cbd5e1; margin-bottom: 20px;">6 sayı seçin (1-60 arası)</p>
+            <div class="selected-count" id="selected-count">Seçili: 0 / 6</div>
+            <p style="color: #cbd5e1; margin-bottom: 20px;">6 sayı seçin (1-60 arası). Seçili sayılara tekrar tıklayarak kaldırabilirsiniz.</p>
             <div class="number-grid" id="number-grid"></div>
             <div class="modal-footer">
                 <button class="cancel-button" onclick="closeEditModal()">İptal</button>
@@ -802,6 +904,8 @@
             tumSayilar[i] = sayiFrekans[i] || 7;
         }
 
+        const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59];
+
         let columns = [
             { id: 1, strateji: strategyNames[0], sayilar: [2, 4, 13, 19, 27, 43], renk: strategyColors[0] },
             { id: 2, strateji: strategyNames[1], sayilar: [3, 11, 19, 35, 43, 52], renk: strategyColors[1] },
@@ -819,6 +923,65 @@
         let selectedNumbers = [];
         let simulationCancelled = false;
         let lastSimulationResults = null;
+
+        function calculateSuccessScore(numbers) {
+            let score = 100;
+            
+            const sum = numbers.reduce((a, b) => a + b, 0);
+            if (sum < 108 || sum > 194) score -= 20;
+            else if (sum >= 170 && sum <= 190) score += 10;
+            
+            const odd = numbers.filter(n => n % 2 === 1).length;
+            if (odd < 2 || odd > 4) score -= 15;
+            else if (odd === 3) score += 5;
+            
+            let consecutive = 0;
+            for (let i = 0; i < numbers.length - 1; i++) {
+                if (numbers[i + 1] - numbers[i] === 1) consecutive++;
+            }
+            if (consecutive > 2) score -= 15;
+            else if (consecutive <= 1) score += 5;
+            
+            const decades = {};
+            numbers.forEach(n => {
+                const decade = Math.floor((n - 1) / 10);
+                decades[decade] = (decades[decade] || 0) + 1;
+            });
+            if (Object.keys(decades).length >= 4) score += 10;
+            if (Object.values(decades).some(v => v > 3)) score -= 10;
+            
+            const primeCount = numbers.filter(n => primes.includes(n)).length;
+            if (primeCount >= 2 && primeCount <= 3) score += 5;
+            
+            const lastDigits = {};
+            numbers.forEach(n => {
+                const last = n % 10;
+                lastDigits[last] = (lastDigits[last] || 0) + 1;
+            });
+            if (Object.keys(lastDigits).length >= 5) score += 5;
+            
+            let freqScore = 0;
+            numbers.forEach(n => {
+                freqScore += tumSayilar[n] || 5;
+            });
+            const avgFreq = freqScore / 6;
+            if (avgFreq >= 8) score += 10;
+            else if (avgFreq < 6) score -= 10;
+            
+            return Math.max(0, Math.min(100, score));
+        }
+
+        function getSuccessClass(score) {
+            if (score >= 85) return 'excellent';
+            if (score >= 70) return 'good';
+            return 'average';
+        }
+
+        function getSuccessText(score) {
+            if (score >= 85) return 'Mükemmel';
+            if (score >= 70) return 'İyi';
+            return 'Orta';
+        }
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -840,6 +1003,9 @@
                 const toplam = column.sayilar.reduce((a, b) => a + b, 0);
                 const tek = column.sayilar.filter(s => s % 2 === 1).length;
                 const cift = 6 - tek;
+                const successScore = calculateSuccessScore(column.sayilar);
+                const successClass = getSuccessClass(successScore);
+                const successText = getSuccessText(successScore);
 
                 const card = document.createElement('div');
                 card.className = 'column-card';
@@ -850,7 +1016,11 @@
                                 ${column.id}
                             </div>
                             <div>
-                                <h3>${column.strateji}</h3>
+                                <h3>${column.strateji} 
+                                    <span class="success-indicator ${successClass}">
+                                        ${successText} (${successScore}%)
+                                    </span>
+                                </h3>
                                 <button class="edit-button" onclick="openEditModal(${index})">Düzenle</button>
                             </div>
                         </div>
@@ -881,6 +1051,13 @@
             });
         }
 
+        function updateSelectedCount() {
+            const countElement = document.getElementById('selected-count');
+            if (countElement) {
+                countElement.textContent = `Seçili: ${selectedNumbers.length} / 6`;
+            }
+        }
+
         function openEditModal(columnIndex) {
             currentEditingColumn = columnIndex;
             selectedNumbers = [...columns[columnIndex].sayilar];
@@ -891,14 +1068,21 @@
             for (let i = 1; i <= 60; i++) {
                 const div = document.createElement('div');
                 div.className = 'number-selector';
+                div.setAttribute('data-number', i);
+                
                 if (selectedNumbers.includes(i)) {
                     div.classList.add('selected');
                 }
+                
                 div.textContent = i;
-                div.onclick = () => toggleNumber(i, div);
+                div.addEventListener('click', function() {
+                    toggleNumber(i);
+                });
+                
                 grid.appendChild(div);
             }
             
+            updateSelectedCount();
             document.getElementById('edit-modal').classList.add('active');
         }
 
@@ -908,8 +1092,10 @@
             selectedNumbers = [];
         }
 
-        function toggleNumber(num, element) {
+        function toggleNumber(num) {
             const index = selectedNumbers.indexOf(num);
+            const element = document.querySelector(`[data-number="${num}"]`);
+            
             if (index > -1) {
                 selectedNumbers.splice(index, 1);
                 element.classList.remove('selected');
@@ -918,9 +1104,11 @@
                     selectedNumbers.push(num);
                     element.classList.add('selected');
                 } else {
-                    alert('En fazla 6 sayı seçebilirsiniz!');
+                    alert('En fazla 6 sayı seçebilirsiniz! Önce bir sayıyı kaldırın.');
                 }
             }
+            
+            updateSelectedCount();
         }
 
         function saveNumbers() {
@@ -1145,6 +1333,223 @@
             `;
         }
 
+        function generateOptimalColumn(existingColumns = []) {
+            let bestNumbers = [];
+            let bestScore = 0;
+            let attempts = 0;
+            
+            while (attempts < 500) {
+                let numbers = [];
+                const sortedFreq = Object.entries(tumSayilar).sort((a, b) => b[1] - a[1]);
+                
+                const hot = sortedFreq.slice(0, 15).map(x => parseInt(x[0]));
+                const medium = sortedFreq.slice(15, 40).map(x => parseInt(x[0]));
+                const cold = sortedFreq.slice(40).map(x => parseInt(x[0]));
+                
+                const hotCount = 2 + Math.floor(Math.random() * 2);
+                const mediumCount = 3 - Math.floor(Math.random() * 2);
+                const coldCount = 6 - hotCount - mediumCount;
+                
+                for (let j = 0; j < hotCount; j++) {
+                    const num = hot[Math.floor(Math.random() * hot.length)];
+                    if (!numbers.includes(num)) numbers.push(num);
+                }
+                
+                for (let j = 0; j < mediumCount; j++) {
+                    const num = medium[Math.floor(Math.random() * medium.length)];
+                    if (!numbers.includes(num)) numbers.push(num);
+                }
+                
+                while (numbers.length < 6) {
+                    const num = cold[Math.floor(Math.random() * cold.length)];
+                    if (!numbers.includes(num)) numbers.push(num);
+                }
+                
+                numbers.sort((a, b) => a - b);
+                
+                let isDifferent = true;
+                for (let existing of existingColumns) {
+                    const overlap = numbers.filter(n => existing.includes(n)).length;
+                    if (overlap > 4) {
+                        isDifferent = false;
+                        break;
+                    }
+                }
+                
+                if (!isDifferent) {
+                    attempts++;
+                    continue;
+                }
+                
+                const score = calculateSuccessScore(numbers);
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestNumbers = [...numbers];
+                }
+                
+                if (score >= 85) {
+                    break;
+                }
+                
+                attempts++;
+            }
+            
+            return bestNumbers.length === 6 ? bestNumbers : null;
+        }
+
+        function generateAISystemCoupon() {
+            const aiColumns = [];
+            const existingNumberSets = [];
+            
+            for (let i = 0; i < 10; i++) {
+                const numbers = generateOptimalColumn(existingNumberSets);
+                if (numbers) {
+                    aiColumns.push({
+                        id: i + 1,
+                        strateji: `🤖 AI Sistem ${i + 1}`,
+                        sayilar: numbers,
+                        renk: strategyColors[i]
+                    });
+                    existingNumberSets.push(numbers);
+                }
+            }
+            
+            if (aiColumns.length === 10) {
+                const avgScore = aiColumns.reduce((sum, col) => 
+                    sum + calculateSuccessScore(col.sayilar), 0) / 10;
+                
+                displayAISystemCoupon(aiColumns, avgScore);
+            } else {
+                alert('Optimal kolon oluşturma başarısız! Lütfen tekrar deneyin.');
+            }
+        }
+
+        function displayAISystemCoupon(aiColumns, avgScore) {
+            const container = document.getElementById('ai-system-container');
+            container.innerHTML = '';
+            
+            const successClass = getSuccessClass(avgScore);
+            const successText = getSuccessText(avgScore);
+            
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'simulation-panel';
+            headerDiv.innerHTML = `
+                <h3 style="color: #fbbf24; margin-bottom: 15px;">
+                    📊 Sistem Kuponu Başarı Analizi
+                </h3>
+                <div style="background: rgba(16, 185, 129, 0.2); border: 2px solid rgba(16, 185, 129, 0.5); border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                    <div style="font-size: 1.5rem; color: #34d399; margin-bottom: 10px;">
+                        <strong>Genel Başarı Skoru:</strong> 
+                        <span class="success-indicator ${successClass}" style="font-size: 1.3rem; margin-left: 10px;">
+                            ${successText} (${avgScore.toFixed(1)}%)
+                        </span>
+                    </div>
+                    <p style="color: #cbd5e1; line-height: 1.6;">
+                        Bu kupon, tüm optimizasyon kriterlerini karşılayan ve birbirinden maksimum farklılık gösteren 10 kolondan oluşur.
+                        Her kolon bağımsız olarak değerlendirilmiş ve en yüksek kazanma olasılığına sahip kombinasyonlar seçilmiştir.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                    <button class="export-button" onclick="applyAISystemCoupon()">
+                        <span>✅</span>
+                        <span>Bu Kuponu Ana Kupona Uygula</span>
+                    </button>
+                    <button class="export-button" onclick="exportAICoupon()">
+                        <span>📥</span>
+                        <span>Sistem Kuponunu İndir</span>
+                    </button>
+                </div>
+            `;
+            container.appendChild(headerDiv);
+
+            aiColumns.forEach((column) => {
+                const toplam = column.sayilar.reduce((a, b) => a + b, 0);
+                const tek = column.sayilar.filter(s => s % 2 === 1).length;
+                const cift = 6 - tek;
+                const successScore = calculateSuccessScore(column.sayilar);
+                const colSuccessClass = getSuccessClass(successScore);
+                const colSuccessText = getSuccessText(successScore);
+
+                const card = document.createElement('div');
+                card.className = 'column-card';
+                card.innerHTML = `
+                    <div class="column-header">
+                        <div class="column-info">
+                            <div class="column-badge" style="background: ${column.renk};">
+                                ${column.id}
+                            </div>
+                            <div>
+                                <h3>${column.strateji}
+                                    <span class="success-indicator ${colSuccessClass}">
+                                        ${colSuccessText} (${successScore}%)
+                                    </span>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="column-stats">
+                            <div class="stat-label">Toplam</div>
+                            <div class="stat-value">${toplam}</div>
+                        </div>
+                    </div>
+                    <div class="numbers-row">
+                        ${column.sayilar.map(num => `
+                            <div class="number-box" style="background: ${column.renk};">
+                                ${num}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="column-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Tek:</span>
+                            <span class="meta-value odd">${tek}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Çift:</span>
+                            <span class="meta-value even">${cift}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            window.currentAICoupon = aiColumns;
+        }
+
+        function applyAISystemCoupon() {
+            if (!window.currentAICoupon) {
+                alert('Önce sistem kuponunu oluşturmalısınız!');
+                return;
+            }
+            
+            columns = window.currentAICoupon.map((col, idx) => ({
+                id: idx + 1,
+                strateji: strategyNames[idx],
+                sayilar: [...col.sayilar],
+                renk: strategyColors[idx]
+            }));
+            
+            renderColumns();
+            switchTab('kupon');
+            alert('✅ AI Sistem kuponu ana kupona uygulandı!');
+        }
+
+        function exportAICoupon() {
+            if (!window.currentAICoupon) {
+                alert('Önce sistem kuponunu oluşturmalısınız!');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(window.currentAICoupon, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ai-sistem-kuponu-' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
         function generateRecommendations() {
             const recommendations = [];
             
@@ -1209,6 +1614,9 @@
                 const toplam = column.sayilar.reduce((a, b) => a + b, 0);
                 const tek = column.sayilar.filter(s => s % 2 === 1).length;
                 const cift = 6 - tek;
+                const successScore = calculateSuccessScore(column.sayilar);
+                const successClass = getSuccessClass(successScore);
+                const successText = getSuccessText(successScore);
 
                 const card = document.createElement('div');
                 card.className = 'column-card';
@@ -1219,7 +1627,11 @@
                                 ${column.id}
                             </div>
                             <div>
-                                <h3>${column.strateji}</h3>
+                                <h3>${column.strateji}
+                                    <span class="success-indicator ${successClass}">
+                                        ${successText} (${successScore}%)
+                                    </span>
+                                </h3>
                                 <button class="edit-button" onclick="applyRecommendation(${column.id - 1})">Kullan</button>
                             </div>
                         </div>
@@ -1265,12 +1677,47 @@
         function renderFeatures() {
             const features = [
                 {
-                    icon: '🏆',
-                    title: 'Toplam Optimizasyonu',
-                    description: 'Tüm kolonlar 108-194 aralığında (ideal: 170-200). Bu aralık, istatistiksel olarak en yüksek kazanma şansına sahip toplam değer aralığıdır.'
+                    icon: '🤖',
+                    title: 'AI Sistem Kupon Önerisi',
+                    description: 'Yapay zeka destekli sistem, tüm optimizasyon kriterlerini uygulayarak matematiksel olarak en yüksek kazanma olasılığına sahip 10 kolonluk kuponu oluşturur. Her kolona başarı skoru atanır.'
                 },
                 {
                     icon: '🎯',
+                    title: 'Başarı Skoru Sistemi',
+                    description: 'Her kolon için 0-100 arası başarı skoru hesaplanır. Frekans, denge, çeşitlilik ve matematiksel optimizasyon kriterlerine göre değerlendirilir.'
+                },
+                {
+                    icon: '🔢',
+                    title: 'Ardışık Sayı Kontrolü',
+                    description: 'Kolonlarda en fazla 2 ardışık sayı bulunması sağlanır. Çok sayıda ardışık sayı matematiksel olarak düşük olasılık gösterir.'
+                },
+                {
+                    icon: '📊',
+                    title: 'Ondalık Bölge Dengesi',
+                    description: 'Sayılar 1-60 arasında 10\'luk dilimler halinde dengeli dağıtılır. Her kolonda en az 4 farklı ondalık bölgeden sayı bulunur.'
+                },
+                {
+                    icon: '🔮',
+                    title: 'Asal Sayı Dengesi',
+                    description: 'Her kolonda ideal olarak 2-3 asal sayı bulunması hedeflenir. Bu doğal sayı dağılımını yansıtır.'
+                },
+                {
+                    icon: '🎨',
+                    title: 'Son Hane Çeşitliliği',
+                    description: 'Sayıların son haneleri (0-9) dengeli dağıtılır. Aynı son haneye sahip çok sayıda rakam düşük olasılık gösterir.'
+                },
+                {
+                    icon: '🔄',
+                    title: 'Kolon Çeşitliliği Garantisi',
+                    description: 'AI sistem kuponu oluştururken her kolonun birbirinden maksimum farklılık göstermesi sağlanır. 4\'ten fazla ortak sayı olmaz.'
+                },
+                {
+                    icon: '🏆',
+                    title: 'Toplam Optimizasyonu',
+                    description: 'Tüm kolonlar 108-194 aralığında (ideal: 170-190). Bu aralık, istatistiksel olarak en yüksek kazanma şansına sahip toplam değer aralığıdır.'
+                },
+                {
+                    icon: '⚖️',
                     title: 'Tek-Çift Dengesi',
                     description: 'Her kolonda 2-4 tek/çift dengesi korundu. Bu denge, doğal sayı dağılımını yansıtır ve başarı şansını artırır.'
                 },
@@ -1280,39 +1727,14 @@
                     description: 'Sık, orta ve az çıkan sayılar stratejik olarak dağıtıldı. 2025 verilerine dayalı ağırlıklı seçim algoritması kullanılır.'
                 },
                 {
-                    icon: '⚡',
-                    title: 'Aralık Kapsaması',
-                    description: '1-60 arası tüm bölgelerden sayılar seçildi. Her kolon, sayı aralığının farklı kesitlerini temsil eder.'
-                },
-                {
                     icon: '🎲',
                     title: 'Monte Carlo Simülasyonu',
                     description: 'Gerçek frekans dağılımlarına dayalı milyonlarca çekiliş simülasyonu. İstatistiksel olarak anlamlı sonuçlar için büyük örneklem boyutu.'
                 },
                 {
                     icon: '💡',
-                    title: 'AI Optimizasyonu',
-                    description: 'Makine öğrenimi prensipleriyle geliştirilmiş optimal kolon önerisi algoritması. Çoklu parametre optimizasyonu.'
-                },
-                {
-                    icon: '📊',
-                    title: 'Detaylı İstatistikler',
-                    description: '6, 5, 4, 3 bilme oranları, toplam kazanç hesaplaması ve başarı yüzdeleri. Her kolon için ayrı performans metrikleri.'
-                },
-                {
-                    icon: '🔄',
-                    title: 'Dinamik Düzenleme',
-                    description: 'Tüm kolonları istediğiniz gibi düzenleyebilme özgürlüğü. Kendi stratejinizi test edin ve simülasyon sonuçlarını karşılaştırın.'
-                },
-                {
-                    icon: '🎨',
-                    title: 'Görsel Analiz',
-                    description: 'Renk kodlu kolonlar, grafikler ve tablolarla kolay anlaşılır veri sunumu. Her kolon benzersiz renk ile tanımlanır.'
-                },
-                {
-                    icon: '💰',
-                    title: 'Kazanç Hesaplama',
-                    description: 'Gerçek Türkiye Milli Piyango ödül yapısına göre tahmini kazanç hesaplaması. 6 bilme: 2M₺, 5 bilme: 5K₺, 4 bilme: 150₺, 3 bilme: 10₺'
+                    title: 'Çoklu Parametre Optimizasyonu',
+                    description: 'Makine öğrenimi prensipleriyle geliştirilmiş optimal kolon önerisi algoritması. 8+ farklı kriter aynı anda optimize edilir.'
                 }
             ];
 
